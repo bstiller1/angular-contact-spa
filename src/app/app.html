@@ -1,0 +1,12 @@
+<header class="navbar">
+  <div class="logo">Angular SPA</div>
+  <nav>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a routerLink="/about" routerLinkActive="active">About</a>
+    <a routerLink="/contact" routerLinkActive="active">Contact</a>
+  </nav>
+</header>
+
+<main class="content">
+  <router-outlet></router-outlet>
+</main>
