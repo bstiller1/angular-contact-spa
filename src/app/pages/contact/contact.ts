@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Analytics } from '../../services/analytics';
+import { SeoSchema } from '../../services/seo-schema';
 
 @Component({
   selector: 'app-contact',
@@ -10,9 +11,47 @@ import { Analytics } from '../../services/analytics';
   templateUrl: './contact.html',
   styleUrl: './contact.css',
 })
-export class Contact {
+export class Contact implements OnInit, OnDestroy {
+  private successMessageTimer: ReturnType<typeof setTimeout> | null = null;
+
+  ngOnInit(): void {
+    this.schemaService.setPageMetadata({
+      title: 'Contact Us',
+      description: 'Reach out to our team with questions, quotes, or support requests.',
+      url: '/contact',
+      type: 'ContactPage'
+    });
+    // Set dynamic ContactPage JSON-LD schema
+    const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "IndexPage",
+  "name": "Veratile Web Development Windsor, ON | Get a Quote",
+  "description": "Web Development, Web Apps, Graphic Design, Web Marketing, Advertising, Search Engine Optimization (SEO), Analytics Tracking, with quick turnover time.",
+  "url": "https://127.0.0.1:4200",
+  "mainEntity": {
+    "@type": "Oragnization",
+    "name": "Versatile Web Development",
+    "url": "https://127.0.0.1:4200",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "Website Quote",
+      "email": "contact@versatileweb.com",
+      "availableLangauge": ['Einglish']
+    }
+  }
+};
+this.schemaService.setJsonLd(contactSchema);
+  }
+
+  ngOnDestroy(): void {
+    if (this.successMessageTimer) {
+      clearTimeout(this.successMessageTimer);
+    }
+    this.schemaService.removeSchema();
+  }
   private fb = inject(FormBuilder);
   private analytics = inject(Analytics);
+  private schemaService = inject(SeoSchema) as any;
 
   contactForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -43,8 +82,9 @@ export class Contact {
     this.submitted = false;
 
     // Hide success message after 4 seconds
-    setTimeout(() => {
+    this.successMessageTimer = setTimeout(() => {
       this.successMessage = false;
+      this.successMessageTimer = null;
     }, 4000);
   }
 }
